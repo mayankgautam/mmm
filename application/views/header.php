@@ -7,6 +7,7 @@
         <script src="<?php echo $baseurl ?>bootstrap/dist/js/bootstrap.min.js"></script>
         <script src="<?php echo $baseurl ?>bootstrap/js/carousel.js"></script>
         <script src="<?php echo $baseurl ?>jquery.validate.min.js"></script>
+        <script src="<?php echo $baseurl ?>working.js"></script>
     </head>
     <body>
         <nav class="navbar navbar-default" role="navigation">
