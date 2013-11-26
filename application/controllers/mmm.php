@@ -1,20 +1,28 @@
 <?php
 
 require_once '../id3/getid3/getid3.php';
+require_once '../../suggest/suggest_handler.php';
 
 /**
  * This the default controller of CI
  */
 class mmm extends CI_Controller {
 
-    public $id3, $data;
+    public $id3, $data, $suggest;
 
     public function __construct() {
+
+        //CI Dependencies
         parent::__construct();
         $this->load->database();
         $this->load->library('session');
         $this->load->helper('url');
+
+        //MetaData dependencies
         $this->id3 = new getID3;
+        $this->suggest = new suggest_handler($this->db);
+
+        //Other variables needed by every page
         define("BASEURL", base_url());
         define("INDEX", index_page());
         $this->data['baseurl'] = BASEURL;
