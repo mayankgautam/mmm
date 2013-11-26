@@ -7,75 +7,74 @@ require_once '../id3/getid3/getid3.php';
  */
 class mmm extends CI_Controller {
 
-    public $id3;
+    public $id3, $data;
 
     public function __construct() {
         parent::__construct();
         $this->load->database();
+        $this->load->library('session');
         $this->load->helper('url');
         $this->id3 = new getID3;
         define("BASEURL", base_url());
         define("INDEX", index_page());
+        $this->data['baseurl'] = BASEURL;
+        $this->data['index'] = INDEX;
+        $this->data['session'] = $this->session;
     }
 
     public function index() {
-        $data['baseurl'] = BASEURL;
-        $data['index'] = INDEX;
-        $data['nodata'] = $this->db->query("select id from musicinfo")->num_rows();
-        $this->load->view("header", $data);
-        $this->load->view('main', $data);
-        $this->load->view("footer", $data);
+        $this->data['nodata'] = $this->db->query("select id from musicinfo")->num_rows();
+        $this->load->view("header", $this->data);
+        $this->load->view('main', $this->data);
+        $this->load->view("footer", $this->data);
     }
 
     public function submitdata() {
-        $data['baseurl'] = BASEURL;
-        $data['index'] = INDEX;
-        $data['error'] = FALSE;
-        $data['success'] = false;
-        $data['errmsg'] = "";
+        $this->data['error'] = FALSE;
+        $this->data['success'] = false;
+        $this->data['errmsg'] = "";
+
+        //Enter all the accepted mime types.
         $allowed = array("audio/mp3");
         if (isset($_POST['submit'])) {
             //Check for file upload errors
             if ($_FILES['musicfile']['error'] > 0) {
-                $data['error'] = true;
-                $data['errmsg'] = "File was not uploaded properly. Please try and upload again";
+                $this->data['error'] = true;
+                $this->data['errmsg'] = "File was not uploaded properly. Please try and upload again";
             } elseif (!in_array($_FILES['musicfile']['type'], $allowed)) {
-                $data['error'] = true;
-                $data['errmsg'] = "File type not supported";
+                $this->data['error'] = true;
+                $this->data['errmsg'] = "File type not supported";
             } else {
                 //Now we can upload the file
                 $fileinfo = $this->id3->analyze($_FILES['musicfile']["tmp_name"]);
 
                 //Add to database
                 if (!$this->addto_database($fileinfo['tags_html']['id3v2'])) {
-                    $data['error'] = TRUE;
-                    $data['errmsg'] = "Unable to add information in the database. Please Try again";
+                    $this->data['error'] = TRUE;
+                    $this->data['errmsg'] = "Unable to add information in the database. Please Try again";
                 } else {
-                    $data['success'] = true;
+                    $this->data['success'] = true;
                 }
             }
         }
-        $this->load->view("header", $data);
-        $this->load->view("submitdata", $data);
-        $this->load->view("footer", $data);
+        $this->load->view("header", $this->data);
+        $this->load->view("submitdata", $this->data);
+        $this->load->view("footer", $this->data);
     }
 
     public function showall() {
-        $data['baseurl'] = BASEURL;
-        $data['index'] = INDEX;
         $query = $this->db->query("select * from musicinfo");
-        $data['songs'] = $query->result();
-        $this->load->view('header', $data);
-        $this->load->view("showall", $data);
-        $this->load->view('footer', $data);
+        $this->data['songs'] = $query->result();
+        $this->load->view('header', $this->data);
+        $this->load->view("showall", $this->data);
+        $this->load->view('footer', $this->data);
     }
 
     public function editinfo($id = NULL) {
         if (is_null($id)) {
             return FALSE;
         }
-        $data['baseurl'] = BASEURL;
-        $data['index'] = INDEX;
+
         $data['error'] = false;
         if (isset($_POST['submit'])) {
             $db_array = array(
@@ -86,25 +85,23 @@ class mmm extends CI_Controller {
 
             $this->db->where('id', $id);
             if (!$this->db->update('musicinfo', $db_array)) {
-                $data['error'] = true;
+                $this->data['error'] = true;
             }
         }
 
         //Get the music details
         $query = $this->db->query("select * from musicinfo where id=$id");
-        $data['song'] = $query->row(0);
-        $this->load->view('header', $data);
-        $this->load->view('editinfo', $data);
-        $this->load->view('footer', $data);
+        $this->data['song'] = $query->row(0);
+        $this->load->view('header', $this->data);
+        $this->load->view('editinfo', $this->data);
+        $this->load->view('footer', $this->data);
     }
 
     public function deleteinfo($id = NULL) {
         if (is_null($id)) {
             return FALSE;
         }
-        $data['baseurl'] = BASEURL;
-        $data['index'] = INDEX;
-        $data['error'] = false;
+        $this->data['error'] = false;
 
         if ($this->db->delete('musicinfo', array('id' => $id))) {
             redirect('mmm/showall');
@@ -129,6 +126,81 @@ class mmm extends CI_Controller {
         );
 
         return $this->db->insert("musicinfo", $db_array);
+    }
+
+    public function register_form() {
+
+
+        $this->load->view('header', $this->data);
+        $this->load->view('register_form', $this->data);
+        $this->load->view('footer', $this->data);
+    }
+
+    public function register() {
+        if ($_POST['registerbutton']) {
+            //Get the variables
+            $name = $_POST['name'];
+            $username = $_POST['username'];
+            $password = $_POST['password'];
+
+            //Now check if this username is already there or not
+            $query = $this->db->query("select * from user where username='$name'");
+
+            if ($query->num_rows() > 0) {
+                //Return the same page with errors
+                $data['error_username'] = true;
+                $this->load->view('header', $this->data);
+                $this->load->view('register_form', $this->data);
+                $this->load->view('footer', $this->data);
+                return;
+            }
+
+            //Now insert this info in the database
+            $this->db->insert("user", array(
+                "fullname" => $_POST['name'],
+                "username" => $_POST['username'],
+                "password" => $_POST['password']
+            ));
+
+            //And go back to the old page
+            $this->index();
+        }
+    }
+
+    public function login_form() {
+
+        $this->load->view("header", $this->data);
+        $this->load->view("login_form", $this->data);
+        $this->load->view("footer", $this->data);
+    }
+
+    public function login() {
+        $data['error'] = false;
+        if (isset($_POST['submit'])) {
+            $username = $_POST['username'];
+            $password = $_POST['password'];
+
+            $query = $this->db->query("select * from user where username='$username' and password='$password' ");
+            $row = $query->row(0);
+            if ($query->num_rows() == 1) {
+                //The person has successfull logged in
+                //Now set the cookies
+
+                $this->session->set_userdata(array(
+                    "authenticated" => true,
+                    "id" => $row->id,
+                    "name" => $row->name
+                ));
+                redirect("/mmm/index");
+            } else {
+                $this->data['error'] = true;
+            }
+
+            //Now unable to successfully
+            $this->load->view("header", $this->data);
+            $this->load->view("login_form", $this->data);
+            $this->load->view("footer", $this->data);
+        }
     }
 
 }

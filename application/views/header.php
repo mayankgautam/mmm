@@ -34,6 +34,10 @@
                     </div>
                     <button type="submit" class="btn btn-default">Submit</button>
                 </form>
-
+                <?php if ($session->userdata('authenticated')): ?>
+                    Hi!, <?php echo $session->userdata('name') ?>
+                <?php else: ?>
+                    <a class="btn btn-success navbar-btn navbar-right" href="<?php echo "$baseurl/$index" ?>/mmm/login_form">Login / Sign Up</a>
+                <?php endif; ?>
             </div>
         </nav>

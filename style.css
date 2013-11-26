@@ -1,0 +1,11 @@
+.form-signin
+{
+    margin: 0 auto;
+    max-width: 450px;
+}
+
+.form-signin h3
+{
+    width: 100%;
+    text-align: center;    
+}

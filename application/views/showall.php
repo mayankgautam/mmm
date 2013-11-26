@@ -16,7 +16,7 @@
         </tr>
         <?php foreach ($songs as $item): ?>
             <tr>
-                <td>
+                <td custom="editablefields">
                     <div class="form-group">
                         <div class="row">
                             <div class="col-sm-10">
@@ -24,12 +24,14 @@
                                 <input type="edit" value="<?php echo $item->title ?>" class="hide" />
                             </div>
                             <div class="col-sm-2">
-                                <span class="glyphicon glyphicon-pencil hide"></span>
+                                <a href="#">
+                                    <span class="glyphicon glyphicon-pencil hide" title="Edit"></span>
+                                </a>
                             </div>
                         </div>
                     </div>
                 </td>
-                <td>
+                <td custom="editablefields">
                     <div class="form-group">
                         <div class="row">
                             <div class="col-sm-10">
@@ -37,12 +39,14 @@
                                 <input type="edit" value="<?php echo $item->artist ?>" class="hide" />
                             </div>
                             <div class="col-sm-2">
-                                <span class="glyphicon glyphicon-pencil hide"></span>
+                                <a href="#">
+                                    <span class="glyphicon glyphicon-pencil hide"></span>
+                                </a>
                             </div>
                         </div>
                     </div>
                 </td>
-                <td>
+                <td custom="editablefields">
                     <div class="form-group">
                         <div class="row">
                             <div class="col-sm-10">
@@ -50,7 +54,9 @@
                                 <input type="edit" value="<?php echo $item->album ?>" class="hide" />
                             </div>
                             <div class="col-sm-2">
-                                <span class="glyphicon glyphicon-pencil hide"></span>
+                                <a href="#">
+                                    <span class="glyphicon glyphicon-pencil hide"></span>
+                                </a>
                             </div>
                         </div>
                     </div>
