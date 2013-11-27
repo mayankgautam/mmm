@@ -27,6 +27,7 @@
                 <ul class="nav navbar-nav">
                     <li><a href="<?php echo "$baseurl/$index" ?>/mmm/submitdata">Submit Data</a></li>
                     <li><a href="<?php echo "$baseurl/$index" ?>/mmm/showall">Show All</a></li>
+                    <li><a href="<?php echo "$baseurl/$index" ?>/mmm/suggestion">Suggestions</a></li>
                 </ul>
                 <form class="navbar-form navbar-right" role="search">
                     <div class="form-group">
@@ -35,9 +36,17 @@
                     <button type="submit" class="btn btn-default">Submit</button>
                 </form>
                 <?php if ($session->userdata('authenticated')): ?>
-                    Hi!, <?php echo $session->userdata('name') ?>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><?php echo $session->userdata('name'); ?><b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">Logout</a></li>
+                            </ul>
+                        </li>
+                    </ul> 
                 <?php else: ?>
                     <a class="btn btn-success navbar-btn navbar-right" href="<?php echo "$baseurl/$index" ?>/mmm/login_form">Login / Sign Up</a>
                 <?php endif; ?>
+
             </div>
         </nav>

@@ -5,11 +5,10 @@
  *
  * @author piyush
  */
-
 /**
  * Defining all the Fields that can be altered
  */
-define("ALBUM","album");
+define("ALBUM", "album");
 define("ARTIST", "artist");
 define("BAND", "band");
 define("COMPOSER", "composer");
@@ -17,7 +16,6 @@ define("DATE", "date");
 define("GENRE", "genre");
 define("TITLE", "title");
 define("YEAR", "year");
-
 
 class suggest_storage {
 
@@ -38,6 +36,10 @@ class suggest_storage {
      * @var array Array containing all the parameters to be used by the template
      */
     public $parameter;
+
+    public function __construct($name, $tpl, $parameter) {
+        $this->add($name, $tpl, $parameter);
+    }
 
     /**
      * This function is used to set the suggest parameters that are required

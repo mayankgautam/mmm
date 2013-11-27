@@ -1,14 +1,14 @@
 <?php
 
 require_once '../id3/getid3/getid3.php';
-require_once '../../suggest/suggest_handler.php';
+require_once 'suggest/suggest_handler.php';
 
 /**
  * This the default controller of CI
  */
 class mmm extends CI_Controller {
 
-    public $id3, $data, $suggest;
+    public $id3, $data, $suggest, $user;
 
     public function __construct() {
 
@@ -18,9 +18,13 @@ class mmm extends CI_Controller {
         $this->load->library('session');
         $this->load->helper('url');
 
+        //Now check if a user is authenticated
+        //if yes then add the user id in the above user variable
+        $this->user = $this->session->userdata('id');
+
         //MetaData dependencies
         $this->id3 = new getID3;
-        $this->suggest = new suggest_handler($this->db);
+        $this->suggest = new suggest_handler($this->db, $this->user);
 
         //Other variables needed by every page
         define("BASEURL", base_url());
@@ -28,6 +32,11 @@ class mmm extends CI_Controller {
         $this->data['baseurl'] = BASEURL;
         $this->data['index'] = INDEX;
         $this->data['session'] = $this->session;
+
+        //Register all the suggest handlers
+        $this->suggest->register_handler(TITLE, "suggest_titleedit", array("username", "songname", "old_value", "new_value"));
+        $this->suggest->register_handler(ARTIST, "suggest_artistedit", array("username", "songname", "old_value", "new_value"));
+        $this->suggest->register_handler(ALBUM, "suggest_albumedit", array("username", "songname", "old_value", "new_value"));
     }
 
     public function index() {
@@ -73,8 +82,50 @@ class mmm extends CI_Controller {
     public function showall() {
         $query = $this->db->query("select * from musicinfo");
         $this->data['songs'] = $query->result();
+        if ($this->session->userdata('authenticated') == TRUE) {
+            $this->data['authenticated'] = TRUE;
+        } else {
+            $this->data['authenticated'] = false;
+        }
         $this->load->view('header', $this->data);
         $this->load->view("showall", $this->data);
+        $this->load->view('footer', $this->data);
+    }
+
+    public function edit() {
+        //Get the parameters
+        $type = $_POST['type'];
+        $id = $_POST['id'];
+        $newvalue = $_POST['new_value'];
+
+        $this->suggest->add_suggest($type, $newvalue, $id);
+    }
+
+    public function suggestion() {
+
+        //Check if we have any submitted information
+        if (isset($_POST['suggestionapproval'])) {
+            $action = $_POST['action'];
+            $id = $_POST['id'];
+
+            //Apply the action on the given suggest
+            $this->suggest->approve($id, $action);
+        }
+        $query = $this->db->query("select * from suggested_info where id not in (select suggest_id from suggestion_approval where user_id=$this->user)")->result();
+        //Before providing all the data to the view, Prepare it
+        $finalarray = array();
+        foreach ($query as $row) {
+            $newtemparray = array();
+            $newtemparray['id'] = $row->id;
+            $result = $this->suggest->getviewname($row);
+            $newtemparray['view'] = $this->load->view($result[0], $result[1], TRUE);
+            $finalarray[] = $newtemparray;
+        }
+
+        $this->data['suggestion'] = $finalarray;
+
+        $this->load->view('header', $this->data);
+        $this->load->view('suggestion', $this->data);
         $this->load->view('footer', $this->data);
     }
 
@@ -83,18 +134,19 @@ class mmm extends CI_Controller {
             return FALSE;
         }
 
-        $data['error'] = false;
+        $this->data['error'] = false;
         if (isset($_POST['submit'])) {
+
             $db_array = array(
                 "title" => $_POST['name'],
                 "artist" => $_POST['artist'],
                 "album" => $_POST['album']
             );
 
-            $this->db->where('id', $id);
-            if (!$this->db->update('musicinfo', $db_array)) {
-                $this->data['error'] = true;
-            }
+            //Add all the suggestion individually
+            $this->suggest->add_suggest(TITLE, $_POST['name'], $id);
+            $this->suggest->add_suggest(ARTIST, $_POST['artist'], $id);
+            $this->suggest->add_suggest(ALBUM, $_POST['album'], $id);
         }
 
         //Get the music details
@@ -120,7 +172,7 @@ class mmm extends CI_Controller {
         if (!is_array($data)) {
             return false;
         }
-
+//preg_match_all('#[-a-zA-Z0-9@:%_\+.~\#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~\#?&//=]*)?#si', $targetString, $result);
         //Prepare the data
         $db_array = array("album" => $data['album'][0],
             "artist" => $data['artist'][0],
@@ -197,7 +249,7 @@ class mmm extends CI_Controller {
                 $this->session->set_userdata(array(
                     "authenticated" => true,
                     "id" => $row->id,
-                    "name" => $row->name
+                    "name" => $row->fullname
                 ));
                 redirect("/mmm/index");
             } else {
