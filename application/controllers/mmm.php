@@ -174,14 +174,15 @@ class mmm extends CI_Controller {
         }
 //preg_match_all('#[-a-zA-Z0-9@:%_\+.~\#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~\#?&//=]*)?#si', $targetString, $result);
         //Prepare the data
-        $db_array = array("album" => $data['album'][0],
-            "artist" => $data['artist'][0],
-            "band" => $data['band'][0],
-            "composer" => $data['composer'][0],
-            "date" => $data['date'][0],
-            "genre" => $data['genre'][0],
-            "title" => $data['title'][0],
-            "year" => $data['year'][0],
+        $db_array = array(
+            "album" => isset($data['album'][0]) ? $data['album'][0] : null,
+            "artist" => isset($data['artist'][0]) ? $data['artist'][0] : null,
+            "band" => isset($data['band'][0]) ? $data['band'][0] : NULL,
+            "composer" => isset($data['composer'][0]) ? $data['composer'][0] : null,
+            "date" => isset($data['date'][0]) ? $data['date'][0] : NULL,
+            "genre" => isset($data['genre'][0]) ? $data['genre'][0] : NULL,
+            "title" => isset($data['title'][0]) ? $data['title'][0] : NULL,
+            "year" => isset($data['year'][0]) ? $data['year'][0] : NULL,
             "other" => json_encode($data)
         );
 
