@@ -27,20 +27,22 @@
                 <ul class="nav navbar-nav">
                     <li><a href="<?php echo "$baseurl/$index" ?>/mmm/submitdata">Submit Data</a></li>
                     <li><a href="<?php echo "$baseurl/$index" ?>/mmm/showall">Show All</a></li>
-                    <li><a href="<?php echo "$baseurl/$index" ?>/mmm/suggestion">Suggestions</a></li>
+                    <?php if ($session->userdata('authenticated')): ?>
+                        <li><a href="<?php echo "$baseurl/$index" ?>/mmm/suggestion">Suggestions</a></li>
+                    <?php endif; ?>
                 </ul>
-                <form class="navbar-form navbar-right" role="search">
+                <form class="navbar-form navbar-right" role="search" action="<?php echo "$baseurl/$index" ?>/mmm/search">
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search">
+                        <input type="text" class="form-control" placeholder="Search" name="searchvalue" />
                     </div>
-                    <button type="submit" class="btn btn-default">Submit</button>
+                    <button type="submit" class="btn btn-default"name="searchsubmit">Submit</button>
                 </form>
                 <?php if ($session->userdata('authenticated')): ?>
                     <ul class="nav navbar-nav navbar-right">
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown"><?php echo $session->userdata('name'); ?><b class="caret"></b></a>
                             <ul class="dropdown-menu">
-                                <li><a href="#">Logout</a></li>
+                                <li><a href="<?php echo "$baseurl/$index" ?>/mmm/logout">Logout</a></li>
                             </ul>
                         </li>
                     </ul> 

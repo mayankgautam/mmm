@@ -168,6 +168,24 @@ class mmm extends CI_Controller {
         }
     }
 
+    public function search() {
+        //Get the thing which is to be searched
+        if (isset($_GET['searchsubmit'])) {
+            $string = $_GET['searchvalue'];
+
+            //Now run three queries and collect the result
+            $query = $this->db->query("select * from musicinfo where title like '%$string%'")->result();
+            $query2 = $this->db->query("select * from musicinfo where album like '%$string%'")->result();
+            $query3 = $this->db->query("select * from musicinfo where artist like '%$string%'")->result();
+            $this->data['song'] = $query;
+            $this->data['album'] = $query2;
+            $this->data['artist'] = $query3;
+        }
+        $this->load->view('header', $this->data);
+        $this->load->view("search", $this->data);
+        $this->load->view('footer', $this->data);
+    }
+
     public function addto_database($data) {
         if (!is_array($data)) {
             return false;
@@ -262,6 +280,11 @@ class mmm extends CI_Controller {
             $this->load->view("login_form", $this->data);
             $this->load->view("footer", $this->data);
         }
+    }
+
+    public function logout() {
+        $this->session->sess_destroy();
+        redirect("/mmm/index");
     }
 
 }

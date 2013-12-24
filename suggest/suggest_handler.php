@@ -5,7 +5,7 @@
  * @author Piyush
  */
 /**
- * This array will hold alll types of suggestions
+ * This array will hold all types of suggestions
  */
 $suggests = array();
 
@@ -23,6 +23,11 @@ class suggest_handler {
     public function getviewname($detail) {
         //Find the tpl name of the given suggest
         $struct = $this->find_structure($detail->typesuggest);
+
+        // This is a system error. So if not proceeded safely we should give an error
+        if ($struct == false) {
+            trigger_error("Cannot find structure of the given suggest: $detail->typesuggest", E_USER_ERROR);
+        }
         //Now check if all the suggest parameters are there
         //Needed parameters are the following
         //Name-songname-old_value-new_value
@@ -42,7 +47,7 @@ class suggest_handler {
 
         //Check if we are satisfying all the needs
         $error = FALSE;
-        foreach ($struct->parameter as $key => $value) {
+        foreach ($struct->parameter as $value) {
             if (!isset($maparray[$value])) {
                 $error = true;
             }
@@ -108,13 +113,13 @@ class suggest_handler {
      */
     public function find_structure($name) {
         global $suggests;
-        $found_key = NULL;
+        $found_key = -1;
         foreach ($suggests as $key => $value) {
             if ($value->name == $name) {
                 $found_key = $key;
             }
         }
-        if ($found_key != null) {
+        if ($found_key >= 0) {
             return $suggests[$found_key];
         } else {
             return false;
